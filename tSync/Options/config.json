@@ -1,0 +1,44 @@
+{
+  "tenants": [
+    {
+      "TwinzoClientName": "whirlpool",
+      "TwinzoClientGuid": "a4b82880-9dca-41f1-971a-73690dd8b222",
+      "TwinzoBranchGuid": "87bdd503-fd94-46b7-ad0a-9e33fdd0c598",
+      "TwinzoApiKey": "cmtOlrZbFUiEFjnXHpeMMjXkXOU2X6BYpcbICJBK",
+      "RtlsType": "spin",
+      "RtlsConnectionString": "whirlpool_poprad"
+    },
+    {
+      "TwinzoClientName": "whirlpool",
+      "TwinzoClientGuid": "a4b82880-9dca-41f1-971a-73690dd8b222",
+      "TwinzoBranchGuid": "aeec4eb2-6179-4f09-8e7e-76e9620ba79d",
+      "TwinzoApiKey": "E7zEYg0MVSgeRAgnQKudF4miJYNw1v68HOiszSVZ",
+      "RtlsType": "spin",
+      "RtlsConnectionString": "whirlpool_cassinetta"
+    },
+    {
+      "TwinzoClientName": "whirlpool",
+      "TwinzoClientGuid": "a4b82880-9dca-41f1-971a-73690dd8b222",
+      "TwinzoBranchGuid": "984ec156-ab6e-4ef7-9ee2-f23195740dca",
+      "TwinzoApiKey": "vzauHrBvLUcyJK0cLcnTQwd0fX4Cpp1MQ9DInQqW",
+      "RtlsType": "spin",
+      "RtlsConnectionString": "whirlpool_radomsko_dishwash"
+    },
+    //{
+    //  "TwinzoClientName": "Plastic Omnium",
+    //  "TwinzoClientGuid": "1889987a-81bc-4eca-8bb3-e1c600f884ab",
+    //  "TwinzoBranchGuid": "f252e3ae-687f-42d7-935a-988b754dc1fb",
+    //  "TwinzoApiKey": "T6eOq0zGfndr00vMbyUVSkwoE8jkZaNNuI987VW9",
+    //  "RtlsType": "simatic_udp",
+    //  "RtlsConnectionString": "localhost"
+    //},
+    //{
+    //  "TwinzoClientName": "Securitas",
+    //  "TwinzoClientGuid": "7d2bcbc9-4764-4ea3-9f29-79c7dba2622a",
+    //  "TwinzoBranchGuid": "f797e726-d08c-472c-99aa-589a2fd13f68",
+    //  "TwinzoApiKey": "HJueBREvauum1wW4IBPfIMWoZT6deIjGru3Jfbiu",
+    //  "RtlsType": "quuppa",
+    //  "RtlsConnectionString": "localhost"
+    //}
+  ]
+}

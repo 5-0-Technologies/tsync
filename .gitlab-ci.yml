@@ -1,0 +1,80 @@
+image : mcr.microsoft.com/dotnet/sdk:9.0
+
+stages:
+  - cleanup
+  - build
+  - test
+  - release_artifacts
+  - deploy_image
+
+variables:
+  REGISTRY: registry.twinzo.eu
+  REPOSITORY: digital-twin/twinzo/tsync
+
+before_script:
+ - dotnet nuget add source https://gitlab.twinzo.eu/api/v4/projects/189/packages/nuget/index.json -n tdevkit
+ - dotnet nuget add source https://gitlab.twinzo.eu/api/v4/projects/199/packages/nuget/index.json -n tutils
+ - dotnet restore "tSync/tSync.csproj"
+
+build:
+  stage: build
+  tags: 
+    - dotnet9
+  script:
+    - dotnet build
+
+test:
+  stage: test
+  tags: 
+    - dotnet9
+  script:
+    - dotnet test
+
+release_linux:
+  stage: release_artifacts
+  tags: 
+    - dotnet9
+  only:
+    - master
+  artifacts:
+    paths:
+      - artifacts/linux/
+    expire_in: 1 week
+  script:
+    - rm -rf tSync/bin/Release/linux-x64/*
+    - dotnet publish tSync/tSync.csproj -c Release -o tSync/bin/Release/linux-x64 --self-contained true -r linux-x64 /p:PublishSingleFile=true
+    - mkdir -p artifacts/linux
+    - cp -r tSync/bin/Release/linux-x64/* artifacts/linux/
+
+release_windows:
+  stage: release_artifacts
+  tags:
+    - dotnet9
+  only:
+    - master
+  artifacts:
+    paths:
+      - artifacts/windows/
+    expire_in: 1 week
+  script:
+    - rm -rf tSync/bin/Release/win-x64/*
+    - dotnet publish tSync/tSync.csproj -c Release -o tSync/bin/Release/win-x64 --self-contained true -r win-x64 /p:PublishSingleFile=true
+    - mkdir -p artifacts/windows
+    - cp -r tSync/bin/Release/win-x64/* artifacts/windows/
+
+deploy_image:
+  stage: deploy_image
+  only:
+    - master
+  before_script:
+    - apt-get update && apt-get install -y docker.io
+  script:
+    - VERSION=$(date +%Y.%m.%d.%H.%M)
+    - docker build -t $REGISTRY/$REPOSITORY:$VERSION .
+    - docker tag $REGISTRY/$REPOSITORY:$VERSION $REGISTRY/$REPOSITORY:latest
+    - docker save -o tsync.tar $REGISTRY/$REPOSITORY:$VERSION
+    - docker login $REGISTRY -u $deploy_user -p $deploy_token
+    - docker push $REGISTRY/$REPOSITORY:$VERSION
+    - docker push $REGISTRY/$REPOSITORY:latest
+  tags: 
+    - dotnet9

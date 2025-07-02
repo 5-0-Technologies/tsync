@@ -1,0 +1,194 @@
+# tSync Code Generation Rules
+
+## Project Overview
+tSync is a .NET 9.0 real-time location tracking synchronization service that integrates multiple RTLS (Real-Time Location System) providers with the Twinzo platform. The application uses a pipeline-based architecture with filters and channels for data processing.
+
+## Architecture Patterns
+
+### Pipeline Pattern
+- All data processing follows a pipeline pattern using `tUtils.Filters`
+- Each provider (Quuppa, Spin, ThingPark, etc.) implements its own pipeline
+- Pipelines consist of filters connected by channels for data flow
+- Use `Channel<T>` for bounded/unbounded data flow between filters
+- Always implement `Register(ICollection<Filter> filters)` method in pipeline classes
+
+### Filter Pattern
+- Filters inherit from `tUtils.Filters` base classes
+- Use appropriate filter types: `InputFilter`, `OutputFilter`, `ChannelFilter`, `InputOutputFilter`
+- Implement `Loop()` method for continuous processing
+- Always handle exceptions in filter loops with proper logging
+- Use cancellation tokens for graceful shutdown
+
+### Configuration Pattern
+- Use strongly-typed configuration classes with `ToString()` for logging
+- Follow naming convention: `{Provider}PipelineOptions`
+- Include common options: `RtlsSender`, `Channel`, `MemoryCache`, `Twinzo`
+- Use JSON serialization with indented formatting for configuration logging
+
+## Code Conventions
+
+### Naming
+- Use PascalCase for public members and classes
+- Use camelCase for private fields and parameters
+- Prefix private fields with underscore: `_fieldName`
+- Use descriptive names for channels: `locationChannel`, `dataChannel`, etc.
+- Use provider-specific prefixes: `QuuppaData`, `SpinData`, `ThingParkData`
+
+### Logging
+- Use structured logging with `ILogger<T>`
+- Log at appropriate levels: Trace, Debug, Information, Warning, Error
+- Include context in log messages: `$"{GetType().Name}: Processing data..."`
+- Log configuration objects using `ToString()` method
+- Use exception logging: `logger.LogError(ex, "Error message")`
+
+### Error Handling
+- Use try-catch blocks in filter loops
+- Log exceptions with context
+- Use null checks with `??` operator for default values
+- Validate constructor parameters with `ArgumentNullException`
+
+### Async/Await
+- Use async/await for I/O operations
+- Use `Task.CompletedTask` for synchronous operations
+- Handle cancellation tokens properly
+- Use `ConfigureAwait(false)` for library code
+
+## Provider Integration
+
+### Twinzo Connection
+- Use `ConnectionOptionsBuilder` for Twinzo API configuration
+- Always include: `Url`, `Client`, `ClientGuid`, `BranchGuid`, `ApiKey`, `Timeout`
+- Use `DevkitConnectorV3` and `DevkitCacheConnector` for API access
+- Configure memory cache with appropriate expiration settings
+
+### Data Transformation
+- Transform provider-specific data to `DeviceLocationContract`
+- Use `TransformChannelFilter<TInput, TOutput>` for type conversions
+- Implement location transformation filters for each provider
+- Handle coordinate systems and unit conversions
+
+### Common Filters
+- `AreaFilter`: Compute localization and no-go areas
+- `RtlsSenderFilter`: Send data to Twinzo with batching
+- `TransformChannelFilter`: Convert between data types
+- Provider-specific filters for data parsing and transformation
+
+## Configuration Structure
+
+### Global Options
+```json
+{
+  "tSync": {
+    "RtlsSender": {
+      "SendIntervalMillis": 10000,
+      "MaxSize": 50
+    },
+    "Channel": {
+      "Capacity": 1000
+    },
+    "MemoryCache": {
+      "ExpirationInSeconds": 60
+    }
+  }
+}
+```
+
+### Provider Options
+- Each provider has its own configuration section
+- Include provider-specific settings (ports, URLs, intervals)
+- Inherit global settings with null-coalescing operator
+- Use arrays for multiple instances of the same provider
+
+## Dependencies
+
+### Core Dependencies
+- `Microsoft.Extensions.Hosting` for service hosting
+- `Microsoft.Extensions.Configuration` for configuration
+- `Microsoft.Extensions.Logging` for logging
+- `Microsoft.Extensions.Caching.Memory` for caching
+- `tDevKit-net9.0` for Twinzo API integration
+- `tUtils-net9.0` for filter framework
+
+### Provider-Specific Dependencies
+- `MQTTnet` for MQTT communication
+- `Npgsql` for PostgreSQL connections
+- `Azure.Messaging.EventHubs` for Azure Event Hubs
+- `System.Data.SqlClient` for SQL Server connections
+
+## Testing and Development
+
+### Configuration
+- Use `appSettings.Development.json` for development
+- Use `appSettings.json` for production
+- Include example configurations in README
+- Use placeholder values for sensitive data
+
+### Logging Levels
+- Development: Trace/Debug for detailed debugging
+- Production: Information/Error for performance
+- Configure different levels for different components
+
+### Error Handling
+- Graceful degradation when providers are unavailable
+- Retry logic for transient failures
+- Circuit breaker pattern for external dependencies
+- Health checks for monitoring
+
+## Performance Considerations
+
+### Channel Configuration
+- Use bounded channels for memory management
+- Configure appropriate capacity based on data volume
+- Monitor channel backpressure and adjust capacity
+
+### Caching Strategy
+- Use memory cache for frequently accessed data
+- Configure appropriate expiration times
+- Consider cache size limits for memory management
+
+### Batching
+- Use `RtlsSenderFilter` for efficient data transmission
+- Configure batch size and interval based on requirements
+- Balance latency vs throughput requirements
+
+## Security
+
+### Configuration Security
+- Never commit sensitive data to source control
+- Use environment variables or secure configuration stores
+- Validate configuration values at startup
+
+### API Security
+- Use API keys for Twinzo authentication
+- Validate input data to prevent injection attacks
+- Use HTTPS for all external communications
+
+## Deployment
+
+### Container Support
+- Include Dockerfile for containerization
+- Use multi-stage builds for optimization
+- Configure health checks and graceful shutdown
+
+### Service Configuration
+- Support Windows Service and systemd
+- Configure logging to appropriate outputs
+- Handle configuration reloading
+
+## Code Quality
+
+### Documentation
+- Include XML documentation for public APIs
+- Document configuration options
+- Provide examples for common use cases
+
+### Code Organization
+- Group related functionality in namespaces
+- Use consistent file organization
+- Separate concerns between data, business logic, and infrastructure
+
+### Maintainability
+- Follow SOLID principles
+- Use dependency injection for testability
+- Implement proper separation of concerns
+- Write self-documenting code with clear naming 

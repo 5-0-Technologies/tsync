@@ -1,0 +1,12 @@
+name: "${PROJECT_NAME}"
+services:
+  tsync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # network_mode: "host"
+    restart: always
+    ports:
+      - ${TSYNC_PORT}:8888
+      #- 9050:9050 # quuppa
+      #- 1883:1883 # rf-controls
